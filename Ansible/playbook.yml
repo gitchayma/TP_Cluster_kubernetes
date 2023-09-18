@@ -1,0 +1,38 @@
+- name: Configuration du Master Kubernetes
+  hosts: masters  # Les maîtres Kubernetes sont définis dans votre inventaire
+  become: yes
+
+  tasks:
+    - name: Installation de Docker
+      apt:
+        name: docker.io
+        state: present
+      when: ansible_distribution == 'Ubuntu'  
+
+    - name: Installation de kubeadm, kubectl, et kubelet    # pour installer les packages kubernetes
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - kubeadm
+        - kubectl
+        - kubelet
+
+    - name: Configuration des règles de pare-feu
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      with_items:
+        - 6443  # Port API Server de Kubernetes
+        - 2379:2380  # Ports etcd
+
+    - name: Désactivation du swap
+      command: swapoff -a
+
+
+
+
+
+
+
